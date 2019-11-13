@@ -1,0 +1,37 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.3.0'
+}
+apply plugin: 'kotlin-kapt'
+
+group 'com.github.fagossa'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+    jcenter()
+    maven { url 'https://jitpack.io' }
+    maven { url "https://dl.bintray.com/arrow-kt/arrow-kt/" }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+def arrow_version = "0.10.2"
+dependencies {
+    compile  "io.arrow-kt:arrow-fx:$arrow_version"
+    compile  "io.arrow-kt:arrow-optics:$arrow_version"
+    compile  "io.arrow-kt:arrow-syntax:$arrow_version"
+    kapt     "io.arrow-kt:arrow-meta:$arrow_version"
+
+    testImplementation "io.kotlintest:kotlintest-runner-junit5:3.4.2"
+}
+
+compileKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+compileTestKotlin {
+    kotlinOptions.jvmTarget = "1.8"
+}
+
+apply from: "./gradleconfig/ktlint.gradle"
