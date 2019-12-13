@@ -3,7 +3,7 @@ package com.github.devoxx.formvalidation
 import java.time.LocalDateTime
 
 fun main() {
-    val firstForm = Form(
+    val firstForm = UserCreation(
             firstName = "Pedro",
             lastName = "Gómez",
             birthday = LocalDateTime.MIN,
@@ -11,14 +11,14 @@ fun main() {
             phoneNumber = "677673299",
             email = "pedro@karumi.com"
     )
-    val firstFormValidationResult = FormValidator.validateForm(LocalDateTime.now(), firstForm)
+    val firstFormValidationResult = UserValidation.validateUserCreation(LocalDateTime.now(), firstForm)
     println("First form validation result $firstFormValidationResult")
     firstFormValidationResult.fold(
             { println("Error found in the first form $it") },
             { println("The first form is valid") }
     )
 
-    val secondForm = Form(
+    val secondForm = UserCreation(
             firstName = "",
             lastName = "     ",
             birthday = LocalDateTime.MIN,
@@ -26,7 +26,7 @@ fun main() {
             phoneNumber = "6777",
             email = "pg"
     )
-    val secondFormValidationResult = FormValidator.validateForm(LocalDateTime.now(), secondForm)
+    val secondFormValidationResult = UserValidation.validateUserCreation(LocalDateTime.now(), secondForm)
     println("First form validation result $secondFormValidationResult")
     secondFormValidationResult.fold(
             { println("Error found in the second form $it") },

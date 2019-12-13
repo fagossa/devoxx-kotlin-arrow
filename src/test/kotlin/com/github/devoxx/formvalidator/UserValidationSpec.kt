@@ -2,18 +2,20 @@ package com.github.devoxx.formvalidator
 
 import arrow.core.NonEmptyList
 import arrow.core.invalid
-import com.github.devoxx.formvalidation.Form
-import com.github.devoxx.formvalidation.FormError
-import com.github.devoxx.formvalidation.FormValidator
+
+import com.github.devoxx.formvalidation.UserCreation
+import com.github.devoxx.formvalidation.UserCreationError
+import com.github.devoxx.formvalidation.UserValidation
+
 import io.kotlintest.matchers.boolean.shouldBeTrue
 import io.kotlintest.properties.forAll
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 import java.time.LocalDateTime
 
-class FormValidatorSpec : StringSpec({
+class UserValidationSpec : StringSpec({
     "should not validate an empty form where every field is wrong" {
-        val form = Form(
+        val form = UserCreation(
                 firstName = "",
                 lastName = "  ",
                 birthday = LocalDateTime.now(),
@@ -22,23 +24,23 @@ class FormValidatorSpec : StringSpec({
                 email = "pedro"
         )
 
-        val result = FormValidator.validateForm(LocalDateTime.now(), form)
+        val result = UserValidation.validateUserCreation(LocalDateTime.now(), form)
 
         result.isInvalid.shouldBeTrue()
         result.shouldBe(
                 NonEmptyList.of(
-                        FormError.InvalidEmail(form.email),
-                        FormError.InvalidPhoneNumber(form.phoneNumber),
-                        FormError.InvalidDocumentId(form.documentId),
-                        FormError.UserTooYoung(form.birthday),
-                        FormError.EmptyFirstName(form.firstName),
-                        FormError.EmptyLastName(form.lastName)
+                        UserCreationError.InvalidEmail(form.email),
+                        UserCreationError.InvalidPhoneNumber(form.phoneNumber),
+                        UserCreationError.InvalidDocumentId(form.documentId),
+                        UserCreationError.UserTooYoung(form.birthday),
+                        UserCreationError.EmptyFirstName(form.firstName),
+                        UserCreationError.EmptyLastName(form.lastName)
                 ).invalid()
         )
     }
 
     "should not validate any form where just one field is invalid" {
-        val form = Form(
+        val form = UserCreation(
                 firstName = "Pedro",
                 lastName = "Gómez",
                 birthday = LocalDateTime.MIN,
@@ -47,12 +49,12 @@ class FormValidatorSpec : StringSpec({
                 email = "p"
         )
 
-        val result = FormValidator.validateForm(LocalDateTime.now(), form)
+        val result = UserValidation.validateUserCreation(LocalDateTime.now(), form)
 
         result.isInvalid.shouldBeTrue()
         result.shouldBe(
                 NonEmptyList.of(
-                        FormError.InvalidEmail(form.email)
+                        UserCreationError.InvalidEmail(form.email)
                 ).invalid()
         )
     }
@@ -60,7 +62,7 @@ class FormValidatorSpec : StringSpec({
     "should validate any form where all the fields are correct" {
         val referenceDate = LocalDateTime.now()
         forAll(Generators.FormGeneartor(referenceDate)) { form ->
-            FormValidator.validateForm(referenceDate, form).isValid
+            UserValidation.validateUserCreation(referenceDate, form).isValid
         }
     }
 })

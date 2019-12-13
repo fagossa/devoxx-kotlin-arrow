@@ -1,20 +1,20 @@
 package com.github.devoxx.formvalidator
 
-import com.github.devoxx.formvalidation.Form
+import com.github.devoxx.formvalidation.UserCreation
 import io.kotlintest.properties.Gen
 import java.time.LocalDateTime
 
 object Generators {
 
-    class FormGeneartor(private val referenceDate: LocalDateTime) : Gen<Form> {
-        override fun constants(): Iterable<Form> = emptyList()
+    class FormGeneartor(private val referenceDate: LocalDateTime) : Gen<UserCreation> {
+        override fun constants(): Iterable<UserCreation> = emptyList()
 
         private val nonEmptyStringGen = { Gen.string().random().filter { it.isNotEmpty() } }
         private val nomEmptyStringWithLetters = { nonEmptyStringGen().filter { it.any { char -> char.isLetter() } } }
 
-        override fun random(): Sequence<Form> =
+        override fun random(): Sequence<UserCreation> =
                 generateSequence {
-                    Form(
+                    UserCreation(
                             firstName = nonEmptyStringGen().first(),
                             lastName = nonEmptyStringGen().first(),
                             birthday = referenceDate.minusYears(Gen.choose(18L, 1000L).random().first()),
