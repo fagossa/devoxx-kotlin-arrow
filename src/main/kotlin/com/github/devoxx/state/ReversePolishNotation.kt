@@ -44,7 +44,6 @@ object ReversePolishNotation {
             "/" == sym -> operator { a, b -> a / b }
             Regex("^[-+]?[1-9]\\d*\$").matches(sym) -> operand(sym.toInt())
             else -> {
-                System.err.println("fail!")
                 State { list -> Tuple2(list, Option.empty()) }
             }
         }
@@ -54,11 +53,12 @@ object ReversePolishNotation {
             State { list ->
                 when {
                     list.size >= 2 -> {
-                        val ans = f(list.toList()[0], list.toList()[1])
-                        Tuple2(listOf(ans, *list.subList(2, list.size).toTypedArray()), Option(ans))
+                        val (first, second) = list.toList()
+                        val ans = f(first, second)
+                        val rest = list.drop(2)
+                        Tuple2(listOf(ans, *rest.toTypedArray()), Option(ans))
                     }
                     else -> {
-                        System.err.println("fail!")
                         Tuple2(list, Option.empty())
                     }
                 }
