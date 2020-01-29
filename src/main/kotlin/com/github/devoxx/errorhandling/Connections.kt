@@ -16,6 +16,8 @@ object Connections {
     fun String.iterator(): ByteIterator = BufferedInputStream(this.byteInputStream()).iterator()
 
     object UsingTry {
+        val defaultUrl = Try { URL("http://duckduckgo.com") }
+
         /*
          * we return a value of type Try<URL>.
          * If the given url is syntactically correct, this will be a Success<URL>.
@@ -23,7 +25,7 @@ object Connections {
          */
         fun parseURL(url: String): Try<URL> = Try { URL(url) }
 
-        fun urlOrElse(url: String) = parseURL(url).orElse { Try { URL("http://duckduckgo.com") } }
+        fun urlOrElse(url: String) = parseURL(url).orElse { defaultUrl }
 
         /*
          * chaining with map is probably NOT what we want ...
