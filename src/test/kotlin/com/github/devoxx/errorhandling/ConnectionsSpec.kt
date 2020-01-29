@@ -7,7 +7,7 @@ import io.kotlintest.specs.StringSpec
 import java.io.InputStream
 
 class UserValidationSpec : StringSpec({
-    "should catch exceptions" {
+    "should catch exceptions using Try<T>" {
         val result = listOf(
                 Connections.UsingTry.parseURL("http://google.com"),
                 Connections.UsingTry.parseURL("azsdvbhytfd.co.uk") // no protocol specified
@@ -15,26 +15,13 @@ class UserValidationSpec : StringSpec({
         result.map { it.isSuccess() }.shouldBe(listOf(true, false))
     }
 
-    "should default values" {
+    "should default values for Try<T>" {
         val result = Connections.UsingTry.urlOrElse("azsdvbhytfd.co.uk") // no protocol specified
         result.shouldBe(defaultUrl)
     }
 
-    "should default values" {
+    "should demonstrate Try<T>.map" {
         val result: Try<Try<Try<InputStream>>> = Connections.UsingTry.inputStreamForURLWithMap("http://google.com")
         result.isSuccess().shouldBe(true)
     }
 })
-
-
-/*
-[
-Success(value=http://google.com),
-Failure(exception=java.net.MalformedURLException: no protocol: azsdvbhytfd.co.uk)
-]
-
-[
-Success(value=http://google.com),
-Failure(exception=java.net.MalformedURLException: no protocol: azsdvbhytfd.co.uk)
-]
-*/
