@@ -19,6 +19,7 @@ object Connections {
         val defaultUrl = Try { URL("http://duckduckgo.com") }
 
         /*
+         * TODO:
          * we return a value of type Try<URL>.
          * If the given url is syntactically correct, this will be a Success<URL>.
          * If the URL constructor throws a MalformedURLException, however, it will be a Failure<URL>.
@@ -28,7 +29,8 @@ object Connections {
         fun urlOrElse(url: String) = parseURL(url).orElse { defaultUrl }
 
         /*
-         * chaining with map is probably NOT what we want ...
+         * TODO:
+         *  chaining with map is probably NOT what we want ... but let's do it anyways
          */
         fun inputStreamForURLWithMap(url: String): Try<Try<Try<InputStream>>> = parseURL(url)
                 .map { u ->
@@ -37,7 +39,8 @@ object Connections {
                 }
 
         /*
-         * chaining with flatMap is what we are looking for :D
+         * TODO:
+         *  chaining with flatMap is what we are looking for :D
          */
         fun inputStreamForURL(url: String): Try<InputStream> = parseURL(url)
                 .flatMap { u ->
@@ -46,10 +49,17 @@ object Connections {
                 }
 
         /*
-         * We can filter content the same way as we do with lists
+         * TODO:
+         *  filter content the same way as we do with lists
          */
         fun parseHttpURL(url: String) = parseURL(url).filter { it.protocol == "http" }
 
+        /*
+         * TODO:
+         *  use the monad comprehension to parseURL, url.openConnection, and conn.inputStream,
+         * finally get an iterator using this code 'BufferedInputStream(iss).iterator()'.
+         * Remember that each line can fail!
+         */
         fun getURLContent(rawUrl: String): Try<ByteIterator> =
                 Try.fx {
                     val (url) = parseURL(rawUrl)
@@ -59,7 +69,8 @@ object Connections {
                 }
 
         /*
-         * We can handle particular exceptions
+         * TODO:
+         * Handle FileNotFoundException, MalformedURLException and others with 'handleError'
          */
         fun handleErrors(content: String): Try<ByteIterator> = getURLContent(content).handleError { e ->
             when (e) {
