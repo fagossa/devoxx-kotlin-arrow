@@ -1,19 +1,24 @@
 package com.github.devoxx.errorhandling
 
+import arrow.core.Failure
 import arrow.core.Try
 import arrow.core.extensions.`try`.applicativeError.handleError
+import arrow.core.extensions.`try`.applicativeError.handleErrorWith
 import arrow.core.extensions.fx
+import arrow.core.fix
 import arrow.core.orElse
+import org.apache.commons.io.IOUtils
 import java.io.BufferedInputStream
 import java.io.FileNotFoundException
 import java.io.InputStream
+import java.lang.IllegalArgumentException
 
 import java.net.MalformedURLException
 import java.net.URL
 
-object Connections {
+fun InputStream.consume(): String = IOUtils.toString(this, "UTF-8")
 
-    fun String.iterator(): ByteIterator = BufferedInputStream(this.byteInputStream()).iterator()
+object Connections {
 
     object UsingTry {
         val defaultUrl = Try { URL("http://duckduckgo.com") }
@@ -26,6 +31,10 @@ object Connections {
          */
         fun parseURL(url: String): Try<URL> = Try { URL(url) }
 
+        /*
+         * TODO:
+         *  'parseUrl' and use 'orElse' to return the 'defaultUrl'
+         */
         fun urlOrElse(url: String) = parseURL(url).orElse { defaultUrl }
 
         /*
@@ -66,19 +75,24 @@ object Connections {
                     val (connection) = Try{ url.openConnection() }
                     val (iss) = Try { connection.inputStream }
                     BufferedInputStream(iss).iterator()
-                }
+                }.fix()
 
         /*
          * TODO:
-         * Handle FileNotFoundException, MalformedURLException and others with 'handleError'
+         * It should use 'handleErrorWith' to recover from exceptions
+         * MalformedURLException -> IllegalStateException("...")
+         * and other exceptions  -> UnsupportedOperationException("...")
          */
-        fun handleErrors(content: String): Try<ByteIterator> = getURLContent(content).handleError { e ->
+        fun handleErrors(content: String): Try<InputStream> = inputStreamForURL(content). handleErrorWith { e ->
             when (e) {
-                is FileNotFoundException -> "Requested page does not exist".iterator()
-                is MalformedURLException -> "Please make sure to enter a valid URL".iterator()
-                else -> "An unexpected error has occurred. We are so sorry!".iterator()
+                is MalformedURLException -> Failure(IllegalStateException("Please make sure to enter a valid URL"))
+                else -> Failure(UnsupportedOperationException("An unexpected error has occurred. We are so sorry!"))
             }
         }
+
+    }
+
+    object UsingEither {
 
     }
 

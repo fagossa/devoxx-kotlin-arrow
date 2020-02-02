@@ -11,6 +11,7 @@ repositories {
     jcenter()
     maven { url 'https://jitpack.io' }
     maven { url "https://dl.bintray.com/arrow-kt/arrow-kt/" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
 }
 
 test {
@@ -19,6 +20,7 @@ test {
 
 def arrow_version = "0.10.4"
 def fuel_version = "2.2.1"
+def kotlinTestVersion = "3.4.2"
 dependencies {
     // fp
     compile  "io.arrow-kt:arrow-fx:$arrow_version"
@@ -29,12 +31,16 @@ dependencies {
     // http
     compile "com.github.kittinunf.fuel:fuel:$fuel_version"
     compile "com.github.kittinunf.fuel:fuel-moshi:$fuel_version"
+    
+    // https://mvnrepository.com/artifact/commons-io/commons-io
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
     // log
     compile  "ch.qos.logback:logback-classic:1.2.3"
 
     kapt     "io.arrow-kt:arrow-meta:$arrow_version"
 
-    testImplementation "io.kotlintest:kotlintest-runner-junit5:3.4.2"
+    // https://github.com/kotlintest/kotlintest/issues/1026
+    testImplementation "io.kotlintest:kotlintest-runner-junit5:$kotlinTestVersion"
 }
 
 compileKotlin {
