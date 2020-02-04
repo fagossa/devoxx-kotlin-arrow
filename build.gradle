@@ -32,8 +32,6 @@ dependencies {
     compile "com.github.kittinunf.fuel:fuel:$fuel_version"
     compile "com.github.kittinunf.fuel:fuel-moshi:$fuel_version"
     
-    // https://mvnrepository.com/artifact/commons-io/commons-io
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
     // log
     compile  "ch.qos.logback:logback-classic:1.2.3"
 

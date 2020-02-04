@@ -3,7 +3,6 @@ package com.github.devoxx.errorhandling
 import arrow.core.*
 import arrow.core.extensions.fx
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.io.IOUtils
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.lang.IllegalArgumentException
@@ -11,8 +10,6 @@ import java.lang.IllegalArgumentException
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLConnection
-
-fun InputStream.consume(): String = IOUtils.toString(this, "UTF-8")
 
 object Connections {
 
