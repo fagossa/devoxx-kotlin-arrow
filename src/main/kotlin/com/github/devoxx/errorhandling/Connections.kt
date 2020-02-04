@@ -1,9 +1,8 @@
 package com.github.devoxx.errorhandling
 
 import arrow.core.*
-import arrow.core.extensions.`try`.applicativeError.handleErrorWith
-import arrow.core.extensions.either.monad.monad
 import arrow.core.extensions.fx
+import kotlinx.coroutines.runBlocking
 import org.apache.commons.io.IOUtils
 import java.io.BufferedInputStream
 import java.io.InputStream
@@ -17,8 +16,12 @@ fun InputStream.consume(): String = IOUtils.toString(this, "UTF-8")
 
 object Connections {
 
+    val defaultUrl = Try { URL("http://duckduckgo.com") }
+
+    /* Try got deprecated :'(
+     * https://www.47deg.com/blog/arrow-v0-10-3-release/
+     */
     object UsingTry {
-        val defaultUrl = Try { URL("http://duckduckgo.com") }
 
         /*
          * TODO:
@@ -69,7 +72,7 @@ object Connections {
         fun getURLContent(rawUrl: String): Try<ByteIterator> =
                 Try.fx {
                     val (url) = parseURL(rawUrl)
-                    val (connection) = Try{ url.openConnection() }
+                    val (connection) = Try { url.openConnection() }
                     val (iss) = Try { connection.inputStream }
                     BufferedInputStream(iss).iterator()
                 }.fix()
@@ -80,7 +83,7 @@ object Connections {
          * MalformedURLException -> IllegalStateException("...")
          * and other exceptions  -> UnsupportedOperationException("...")
          */
-        fun handleErrors(content: String): Try<InputStream> = inputStreamForURL(content). handleErrorWith { e ->
+        fun handleErrors(content: String): Try<InputStream> = inputStreamForURL(content).handleErrorWith { e ->
             when (e) {
                 is MalformedURLException -> Failure(IllegalStateException("Please make sure to enter a valid URL"))
                 else -> Failure(UnsupportedOperationException("An unexpected error has occurred. We are so sorry!"))
@@ -108,54 +111,30 @@ object Connections {
 
         /*
          * TODO:
-         *  chaining with map is probably NOT what we want ... but let's do it anyways
+         *  use the monad comprehension to parseURL, url.openConnection, and conn.inputStream,
+         * finally get an iterator using this code 'BufferedInputStream(iss).iterator()'.
+         * Remember that each line can fail!
          */
-        suspend fun inputStreamForURLWithMap(url: String): Either<Throwable, Either<Throwable, Either<Throwable, InputStream>>> =
-                parseURL(url)
-                .map { u ->
-                    Either.catch { u.openConnection() }
-                            .map { conn -> Either.catch { conn.getInputStream() } }
-                }
-
-        /*
-         * TODO:
-         *  chaining with flatMap is what we are looking for :D
-         * You could also flatten with: Either.monad<InputStream>().flatten(result)
-         */
-        suspend fun inputStreamForURL(url: String): Either<Throwable, InputStream> {
-            suspend fun open(u: URL): Either<Throwable, URLConnection> = Either.catch { u.openConnection() }
-            suspend fun stream(conn: URLConnection): Either<Throwable, InputStream> = Either.catch { conn.getInputStream() }
-            return parseURL(url)
-                    .flatMap { u -> open(u)
-                            .flatMap { conn ->  stream(conn) }
+        fun inputStreamForURL(url: String): Either<Throwable, InputStream> {
+            fun open(u: URL): Either<Throwable, URLConnection> = Try { u.openConnection() }.toEither()
+            fun stream(conn: URLConnection): Either<Throwable, InputStream> = Try { conn.getInputStream() }.toEither()
+            fun parse(url: String): Either<Throwable, URL> = runBlocking { parseURL(url) }
+            return Either.fx {
+                val parsed = !parse(url)
+                val conn = !open(parsed)
+                !stream(conn)
             }
         }
-
 
         /*
          * TODO:
          *  filter content the same way as we do with lists using 'filterOrElse'
          */
-        suspend fun parseHttpURL(url: String) =
-                parseURL(url).filterOrElse (
+        suspend fun parseHttpURL(url: String): Either<Throwable, URL> =
+                parseURL(url).filterOrElse(
                         { it.protocol == "http" },
-                        { IllegalArgumentException ("Not http protocol")}
+                        { IllegalArgumentException("Not http protocol") }
                 )
-
-        /*
-         * TODO:
-         *  use the monad comprehension to parseURL, url.openConnection, and conn.inputStream,
-         * finally get an iterator using this code 'BufferedInputStream(iss).iterator()'.
-         * Remember that each line can fail!
-         */
-         // https://youtu.be/q6HpChSq-xc?t=218
-        suspend fun getURLContent(rawUrl: String) =
-                Either.monad<Throwable>.fx {
-                    val (url) = parseURL(rawUrl)
-                    val (connection) = Either.catch{ url.openConnection() }
-                    val (iss) = Either.catch { connection.inputStream }
-                    BufferedInputStream(iss).iterator()
-                }
 
         /*
          * TODO:
@@ -163,13 +142,12 @@ object Connections {
          * MalformedURLException -> IllegalStateException("...")
          * and other exceptions  -> UnsupportedOperationException("...")
          */
-        suspend fun handleErrors(content: String): Try<InputStream> = inputStreamForURL(content). handleErrorWith { e ->
-            when (e) {
-                is MalformedURLException -> Failure(IllegalStateException("Please make sure to enter a valid URL"))
-                else -> Failure(UnsupportedOperationException("An unexpected error has occurred. We are so sorry!"))
-            }
-        }
+        fun handleErrors(content: String): Either<Throwable, InputStream> =
+                inputStreamForURL(content).handleErrorWith { e ->
+                    when (e) {
+                        is MalformedURLException -> Either.left(IllegalStateException("Please make sure to enter a valid URL"))
+                        else -> Either.left(UnsupportedOperationException("An unexpected error has occurred. We are so sorry!"))
+                    }
+                }
     }
-
-
 }

@@ -1,16 +1,18 @@
 package com.github.devoxx.errorhandling
 
 import arrow.core.Try
-import com.github.devoxx.errorhandling.Connections.UsingTry.defaultUrl
+import com.github.devoxx.errorhandling.Connections.defaultUrl
 import io.kotlintest.fail
 import io.kotlintest.matchers.types.shouldBeInstanceOf
 import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
 import java.io.InputStream
 
-class UserValidationSpec : StringSpec({
+class ConnectionsSpec : StringSpec({
 
+    // ---------------------------
     // Using Try
+    // ---------------------------
     "should catch exceptions using Try<T>" {
         val result = listOf(
                 Connections.UsingTry.parseURL("http://google.com"),
@@ -59,6 +61,38 @@ class UserValidationSpec : StringSpec({
         )
     }
 
+    // ---------------------------
     // Using Either
+    // ---------------------------
+    "should catch exceptions using Either<U, T>" {
+        val result = listOf(
+                Connections.UsingEither.parseURL("http://google.com"),
+                Connections.UsingEither.parseURL("azsdvbhytfd.co.uk") // no protocol specified
+        )
+        result.map { it.isRight() }.shouldBe(listOf(true, false))
+    }
+
+    "should default values for Either<U, T>" {
+        val result = Connections.UsingEither.urlOrElse("azsdvbhytfd.co.uk") // no protocol specified
+        defaultUrl.fold({fail("unexpected")}, { url -> result.shouldBe(url) })
+    }
+
+    "should demonstrate Either<U, T>.filter" {
+        Connections.UsingEither.parseHttpURL("http://google.com").isRight().shouldBe(true)
+        Connections.UsingEither.parseHttpURL("https://google.com").isRight().shouldBe(false)
+    }
+
+    "should demonstrate Either<U, T>.handleError" {
+        // It must handle a MalformedURLException
+        Connections.UsingEither.handleErrors("azsdvbhytfd.co.uk").fold (
+                { it.shouldBeInstanceOf<IllegalStateException>() },
+                { fail("it was expected to fail") }
+        )
+        // It must handle any other exception
+        Connections.UsingEither.handleErrors("http://theguardian.ru").fold (
+                { it.shouldBeInstanceOf<UnsupportedOperationException>() },
+                { fail("it was expected to fail") }
+        )
+    }
 })
 
