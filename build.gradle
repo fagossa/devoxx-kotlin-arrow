@@ -39,6 +39,8 @@ dependencies {
 
     kapt     "io.arrow-kt:arrow-meta:$arrow_version"
 
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.3.3"
+
     // https://github.com/kotlintest/kotlintest/issues/1026
     testImplementation "io.kotlintest:kotlintest-runner-junit5:$kotlinTestVersion"
 }
