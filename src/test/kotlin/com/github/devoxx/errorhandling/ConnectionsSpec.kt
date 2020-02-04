@@ -41,12 +41,10 @@ class ConnectionsSpec : StringSpec({
         Connections.UsingTry.parseHttpURL("https://google.com").isSuccess().shouldBe(false)
     }
 
-    /*"should demonstrate monad comprehension" {
-        //java.lang.NoClassDefFoundError: arrow/core/Continuation
-        // Note: increase the kotlin test version to 4 once released
+    "should demonstrate monad comprehension" {
         val urlContent: Try<ByteIterator> = Connections.UsingTry.getURLContent("http://google.com")
         urlContent.isSuccess().shouldBe(true)
-    }*/
+    }
 
     "should demonstrate Try<T>.handleError" {
         // It must handle a MalformedURLException

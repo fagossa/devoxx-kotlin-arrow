@@ -61,3 +61,5 @@ fastlane/readme.md
 # SD Card image for emulators
 *.img
 *.img.qcow2
+
+.kotlintest/
