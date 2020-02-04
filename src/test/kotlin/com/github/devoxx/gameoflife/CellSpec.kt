@@ -2,8 +2,9 @@ package com.github.devoxx.gameoflife
 
 import io.kotlintest.properties.Gen
 import io.kotlintest.properties.forAll
+import io.kotlintest.shouldBe
 import io.kotlintest.specs.StringSpec
-import org.junit.jupiter.api.Assertions.assertEquals
+//import org.junit.jupiter.api.Assertions.assertEquals
 
 class CellSpec : StringSpec({
 
@@ -32,6 +33,6 @@ class CellSpec : StringSpec({
     }
 
     "every dead cell returns a live cell if the number of alive neighbours is 3" {
-        assertEquals(Cell.alive, Cell.dead.evolve(3))
+        Cell.alive.shouldBe(Cell.dead.evolve(3))
     }
 })
