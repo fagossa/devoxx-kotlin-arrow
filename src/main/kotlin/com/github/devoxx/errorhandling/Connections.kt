@@ -32,10 +32,11 @@ object Connections {
          * TODO:
          *  'parseUrl' and use 'orElse' to return the 'defaultUrl'
          */
-        fun urlOrElse(url: String) = parseURL(url).orElse { defaultUrl }
+        fun urlOrElse(url: String): Try<URL> = parseURL(url).orElse { defaultUrl }
 
         /*
          * TODO:
+         *  parseUrl, then open the connection, and finally get the inputStream
          *  chaining with map is probably NOT what we want ... but let's do it anyways
          */
         fun inputStreamForURLWithMap(url: String): Try<Try<Try<InputStream>>> = parseURL(url)
@@ -93,9 +94,9 @@ object Connections {
 
         /*
          * TODO:
-         * we return a value of type Try<URL>.
-         * If the given url is syntactically correct, this will be a Success<URL>.
-         * If the URL constructor throws a MalformedURLException, however, it will be a Failure<URL>.
+         *  Use the function 'catch' to build a new URL.
+         *  If the given url is syntactically correct, this will be a Right<Throwable, URL>.
+         *  If the URL constructor throws a MalformedURLException, however, it will be a Left<Throwable, URL>.
          */
         suspend fun parseURL(url: String): Either<Throwable, URL> = Either.catch { URL(url) }
 
@@ -103,14 +104,20 @@ object Connections {
          * TODO:
          *  'parseUrl' and use 'orElse' to return the 'defaultUrl'
          */
-        suspend fun urlOrElse(url: String) = parseURL(url)
+        suspend fun urlOrElse(url: String): URL = parseURL(url)
                 .getOrHandle { URL("http://duckduckgo.com") }
 
         /*
          * TODO:
-         *  use the monad comprehension to parseURL, url.openConnection, and conn.inputStream,
-         * finally get an iterator using this code 'BufferedInputStream(iss).iterator()'.
-         * Remember that each line can fail!
+         *  use the monad comprehension to 'parseURL', 'u.openConnection', and 'conn.getInputStream'.
+         *  however to make things easier, handle errors with 'Try', then transform them to Either by using '.toEither'
+         *  its a shame, but we might need to use 'runBlocking{...}' to call 'parseURL'
+         *  use a monad comprehension by following this pattern
+         *  Either.fx {
+         *    val v1 = !aFunction() // this function returns an Either
+         *    val v2 = !anotherFunction() // this function returns an Either
+         *    v1.calculate(v2) // this is not an Either
+         *  }
          */
         fun inputStreamForURL(url: String): Either<Throwable, InputStream> {
             fun open(u: URL): Either<Throwable, URLConnection> = Try { u.openConnection() }.toEither()
@@ -125,7 +132,8 @@ object Connections {
 
         /*
          * TODO:
-         *  filter content the same way as we do with lists using 'filterOrElse'
+         *  'parseURL' then use 'filterOrElse' to filter content the same way as we do with lists
+         *  Only allow urls of protocol 'http', otherwise 'IllegalArgumentException'
          */
         suspend fun parseHttpURL(url: String): Either<Throwable, URL> =
                 parseURL(url).filterOrElse(
@@ -135,9 +143,9 @@ object Connections {
 
         /*
          * TODO:
-         * It should use 'handleErrorWith' to recover from exceptions
-         * MalformedURLException -> IllegalStateException("...")
-         * and other exceptions  -> UnsupportedOperationException("...")
+         *  It should use 'handleErrorWith' to recover from exceptions
+         *  MalformedURLException -> IllegalStateException("...")
+         *  and other exceptions  -> UnsupportedOperationException("...")
          */
         fun handleErrors(content: String): Either<Throwable, InputStream> =
                 inputStreamForURL(content).handleErrorWith { e ->
