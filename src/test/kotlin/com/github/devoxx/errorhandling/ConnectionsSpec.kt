@@ -48,14 +48,14 @@ class ConnectionsSpec : StringSpec({
 
     "should demonstrate Try<T>.handleError" {
         // It must handle a MalformedURLException
-        Connections.UsingTry.handleErrors("azsdvbhytfd.co.uk").fold (
+        Connections.UsingTry.handleErrors("azsdvbhytfd.co.uk").fold(
                 { it.shouldBeInstanceOf<IllegalStateException>() },
-                { fail("it was expected to fail")}
+                { fail("it was expected to fail") }
         )
         // It must handle any other exception
-        Connections.UsingTry.handleErrors("http://theguardian.ru").fold (
+        Connections.UsingTry.handleErrors("http://theguardian.ru").fold(
                 { it.shouldBeInstanceOf<UnsupportedOperationException>() },
-                { fail("it was expected to fail")}
+                { fail("it was expected to fail") }
         )
     }
 
@@ -72,7 +72,7 @@ class ConnectionsSpec : StringSpec({
 
     "should default values for Either<U, T>" {
         val result = Connections.UsingEither.urlOrElse("azsdvbhytfd.co.uk") // no protocol specified
-        defaultUrl.fold({fail("unexpected")}, { url -> result.shouldBe(url) })
+        defaultUrl.fold({ fail("unexpected") }, { url -> result.shouldBe(url) })
     }
 
     "should demonstrate Either<U, T>.filter" {
@@ -82,15 +82,14 @@ class ConnectionsSpec : StringSpec({
 
     "should demonstrate Either<U, T>.handleError" {
         // It must handle a MalformedURLException
-        Connections.UsingEither.handleErrors("azsdvbhytfd.co.uk").fold (
+        Connections.UsingEither.handleErrors("azsdvbhytfd.co.uk").fold(
                 { it.shouldBeInstanceOf<IllegalStateException>() },
                 { fail("it was expected to fail") }
         )
         // It must handle any other exception
-        Connections.UsingEither.handleErrors("http://theguardian.ru").fold (
+        Connections.UsingEither.handleErrors("http://theguardian.ru").fold(
                 { it.shouldBeInstanceOf<UnsupportedOperationException>() },
                 { fail("it was expected to fail") }
         )
     }
 })
-

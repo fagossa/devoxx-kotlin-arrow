@@ -74,8 +74,7 @@ object ReversePolishNotation {
      *
      */
     fun evalAll(sym: List<String>): CalcState<Int> =
-            sym.foldLeft(StateApi.just(Option(0)))
-            { acc, b ->
+            sym.foldLeft(StateApi.just(Option(0))) { acc, b ->
                 acc.flatMap(Id.monad()) { evalOne(b) }
             }
 }

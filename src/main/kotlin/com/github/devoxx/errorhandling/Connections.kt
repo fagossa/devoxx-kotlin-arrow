@@ -73,7 +73,7 @@ object Connections {
                     val (connection) = Try { url.openConnection() }
                     val (iss) = Try { connection.inputStream }
                     BufferedInputStream(iss).iterator()
-                }.fix()
+                }
 
         /*
          * TODO:
@@ -87,7 +87,6 @@ object Connections {
                 else -> Failure(UnsupportedOperationException("An unexpected error has occurred. We are so sorry!"))
             }
         }
-
     }
 
     object UsingEither {

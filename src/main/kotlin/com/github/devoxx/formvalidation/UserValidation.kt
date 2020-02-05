@@ -59,17 +59,16 @@ object UserValidation {
             Either.cond(email.contains("@"),
                     { email },
                     { NonEmptyList.of(UserCreationError.InvalidEmail(email)) })
-
 }
 
 // @product  this should activate toUserCreation() in Tuple6
 data class UserCreation(
-        val firstName: String,
-        val lastName: String,
-        val birthday: LocalDateTime,
-        val documentId: String,
-        val phoneNumber: String,
-        val email: String
+    val firstName: String,
+    val lastName: String,
+    val birthday: LocalDateTime,
+    val documentId: String,
+    val phoneNumber: String,
+    val email: String
 ) {
     companion object
 }
