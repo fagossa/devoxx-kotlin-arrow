@@ -1,10 +1,9 @@
 package com.github.devoxx.state
 
-import arrow.core.Id
-import arrow.core.ListK
-import arrow.core.Some
+import arrow.core.*
 import arrow.core.extensions.id.monad.monad
-import arrow.core.value
+import arrow.mtl.State
+import arrow.mtl.extensions.fx
 import com.github.devoxx.state.ReversePolishNotation.evalAll
 import com.github.devoxx.state.ReversePolishNotation.evalOne
 import io.kotlintest.shouldBe
@@ -18,10 +17,10 @@ class StateSpec : StringSpec({
 
     "must handle the '+' operator" {
         // TODO 06: make this test pass
-        evalOne("1").flatMap(Id.monad()) {
-            evalOne("2").flatMap(Id.monad()) {
-                evalOne("+")
-            }
+        State.fx<ForId, List<Int>, Option<Int>>(Id.monad()) {
+            !evalOne("1")
+            !evalOne("2")
+            !evalOne("+")
         }.runA(Id.monad(), ListK(emptyList())).value().shouldBe(Some(3))
     }
 
@@ -54,14 +53,12 @@ class StateSpec : StringSpec({
 
     "must handle multiple '+'" {
         // TODO 06: make this test pass
-        evalOne("1").flatMap(Id.monad()) {
-            evalOne("1").flatMap(Id.monad()) {
-                evalOne("+").flatMap(Id.monad()) {
-                    evalOne("1").flatMap(Id.monad()) {
-                        evalOne("+")
-                    }
-                }
-            }
+        State.fx<ForId, List<Int>, Option<Int>>(Id.monad()) {
+            !evalOne("1")
+            !evalOne("1")
+            !evalOne("+")
+            !evalOne("1")
+            !evalOne("+")
         }.runA(Id.monad(), ListK(emptyList())).value().shouldBe(Some(3))
     }
 
