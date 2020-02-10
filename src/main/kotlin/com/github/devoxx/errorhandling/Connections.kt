@@ -2,11 +2,12 @@ package com.github.devoxx.errorhandling
 
 import arrow.core.*
 import arrow.core.extensions.fx
+import arrow.fx.IO
+import arrow.fx.extensions.fx
 import kotlinx.coroutines.runBlocking
 import java.io.BufferedInputStream
 import java.io.InputStream
 import java.lang.IllegalArgumentException
-
 import java.net.MalformedURLException
 import java.net.URL
 import java.net.URLConnection
@@ -154,4 +155,68 @@ object Connections {
                     }
                 }
     }
+
+    /*
+     * IO is the future
+     */
+    object UsingIO {
+
+        /*
+         * TODO:
+         * we return a value of type Try<URL>.
+         * If the given url is syntactically correct, this will be a Success<URL>.
+         * If the URL constructor throws a MalformedURLException, however, it will be a Failure<URL>.
+         */
+        fun parseURL(url: String): IO<URL> = IO { URL(url) }
+
+        /*
+         * TODO:
+         *  chaining with flatMap is what we are looking for :D
+         */
+        fun inputStreamForURL(url: String): IO<InputStream> = parseURL(url)
+                .flatMap { u ->
+                    IO { u.openConnection() }
+                            .flatMap { conn -> IO { conn.getInputStream() } }
+                }
+
+        /*
+         * TODO:
+         *  filter content the same way as we do with lists
+         */
+        fun parseHttpURL(url: String): IO<URL> = parseURL(url)
+
+        /*
+         * TODO:
+         *  use the monad comprehension to parseURL, url.openConnection, and conn.inputStream,
+         * finally get an iterator using this code 'BufferedInputStream(iss).iterator()'.
+         * Remember that each line can fail!
+         */
+        fun getURLContent(rawUrl: String): IO<ByteIterator> =
+                IO.fx {
+                    // TODO: consider using bracket(???)
+                    val (url) = parseURL(rawUrl)
+                    val (connection) = IO { url.openConnection() }
+                    val (iss) = IO { connection.inputStream }
+                    BufferedInputStream(iss).iterator()
+                }
+
+        /*
+         * TODO:
+         * It should use 'redeemWith' to recover from exceptions
+         * MalformedURLException -> IllegalStateException("...")
+         * and other exceptions  -> UnsupportedOperationException("...")
+         *
+         * To create a failed IO, you need create an error `IO.raiseError(myException)`
+         */
+        fun handleErrors(content: String): IO<InputStream> = inputStreamForURL(content).redeemWith(
+                {
+                    when (it) {
+                        is MalformedURLException -> IO.raiseError<InputStream>(IllegalStateException("Please make sure to enter a valid URL"))
+                        else -> IO.raiseError<InputStream>(UnsupportedOperationException("An unexpected error has occurred. We are so sorry!"))
+                    }
+                },
+                { IO { it } }
+        )
+    }
+
 }
