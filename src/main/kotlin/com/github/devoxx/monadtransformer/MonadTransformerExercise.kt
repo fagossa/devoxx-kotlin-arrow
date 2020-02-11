@@ -23,6 +23,7 @@ fun getStreetNameUsingFlatMap(maybePerson: Option<Person>): Option<String> =
 /*
  * TODO:
  * Get person address street name using monad comprehensions
+ * Use Destructuring binding or yielding
  */
 fun getStreetNameUsingMonadComprehension(maybePerson: Option<Person>): Option<String> =
         Option.fx {
@@ -35,8 +36,9 @@ fun getStreetNameUsingMonadComprehension(maybePerson: Option<Person>): Option<St
 /*
  * TODO:
  * Get person address street name (do not use monad comprehension)
+ * Use findPerson and findAddressStreetName
  */
-fun getPersonAddressStreetName(personId: Int) =
+fun getPersonAddressStreetName(personId: Int): Either<Throwable, Option<Option<Either<Throwable, Option<String>>>>> =
         findPerson(personId).map { maybePerson ->
             maybePerson.map { person ->
                 person.address.map { address ->
@@ -50,19 +52,21 @@ fun getPersonAddressStreetName(personId: Int) =
 /*
  * TODO:
  * Get person address street name using monad comprehension
+ * Call Either.fx {} to start monad comprehension
+ * Use Destructuring binding or yielding to retrieve option from either (call to findPerson and findAddressStreetName)
  */
-fun getPersonAddressStreetNameUsingMonadComprehension(personId: Int) =
-        Either.fx<Throwable, Option<String>> {
-            val maybePerson = findPerson(personId).bind()
-            val person = maybePerson.fold(
+fun getPersonAddressStreetNameUsingMonadComprehension(personId: Int): Either<Throwable, Option<String>> =
+        Either.fx {
+            val (maybePerson) = findPerson(personId)
+            val (person) = maybePerson.fold(
                     { Either.left(NoSuchElementException("...")) },
                     { Either.right(it) }
-            ).bind()
-            val address = person.address.fold(
+            )
+            val (address) = person.address.fold(
                     { Either.left(NoSuchElementException("...")) },
                     { Either.right(it) }
-            ).bind()
-            val maybeStreetName = findAddressStreetName(address.id).bind()
+            )
+            val (maybeStreetName) = findAddressStreetName(address.id)
             maybeStreetName
         }
 
@@ -76,8 +80,14 @@ fun getPersonAddressStreetNameUsingMonadComprehension(personId: Int) =
 /*
  * TODO:
  * Get person address street name using monad transformer OptionT and monad comprehension
+ * Call  OptionT.fx(Either.monad<Throwable>()) {} to start monad comprehension
+ * Use findPerson and findAddressStreetName
+ * Call OptionT() with an either as parameter
+ * Use Destructuring binding or yielding
+ * Call value() to run the transformer
+ * Call fix() to end monad comprehension
  */
-fun getPersonAddressStreetNameUsingMonadTransformer(personId: Int) =
+fun getPersonAddressStreetNameUsingMonadTransformer(personId: Int): Either<Throwable, Option<String>> =
         OptionT.fx(Either.monad<Throwable>()) {
             val (person) = OptionT(findPerson(personId))
             val (address) = OptionT(Either.right(person.address))
