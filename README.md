@@ -1,11 +1,10 @@
 Workshop on FP in kotlin using arrow 
 ================
 
-Workshop devoxx 2020
-
 # 1. Sequencing operations
 * Using `Try<T>`
 * Using `Either<Throwable, T>`
+* Using `IO<T>`
 
 ```
 ./gradlew test --tests com.github.devoxx.errorhandling.ConnectionsSpec
@@ -30,4 +29,11 @@ Using `State Monad`
 
 ```
 ./gradlew test --tests com.github.devoxx.state.StateSpec
+```
+
+# 5. Monad Transformers
+Using `OptionT`
+
+```
+./gradlew test --tests com.github.devoxx.monadtransformer.MonadTransformerExerciseSpec
 ```
