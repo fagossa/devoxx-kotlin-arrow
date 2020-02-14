@@ -181,12 +181,6 @@ object Connections {
 
         /*
          * TODO:
-         *  filter content the same way as we do with lists
-         */
-        fun parseHttpURL(url: String): IO<URL> = parseURL(url)
-
-        /*
-         * TODO:
          *  use the monad comprehension to parseURL, url.openConnection, and conn.inputStream,
          * finally get an iterator using this code 'BufferedInputStream(iss).iterator()'.
          * Remember that each line can fail!

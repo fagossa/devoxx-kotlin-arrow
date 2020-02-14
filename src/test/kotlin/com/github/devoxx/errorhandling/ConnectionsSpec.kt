@@ -14,8 +14,8 @@ import java.io.InputStream
 import java.net.MalformedURLException
 
 object TryTests : Tag()
-object EitherTests: Tag()
-object IOTests: Tag()
+object EitherTests : Tag()
+object IOTests : Tag()
 
 class ConnectionsSpec : StringSpec({
 
@@ -30,7 +30,7 @@ class ConnectionsSpec : StringSpec({
         result.map { it.isSuccess() }.shouldBe(listOf(true, false))
     }
 
-    "Try<T> should default values" .config(tags = setOf(TryTests)) {
+    "Try<T> should default values".config(tags = setOf(TryTests)) {
         val result = Connections.UsingTry.urlOrElse("azsdvbhytfd.co.uk") // no protocol specified
         result.shouldBe(defaultUrl)
     }
@@ -117,4 +117,16 @@ class ConnectionsSpec : StringSpec({
         val result: IO<InputStream> = Connections.UsingIO.inputStreamForURL("http://google.com")
         result.unsafeRunSync().shouldNotBeNull()
     }
+
+    "IO<T>.handleError should demonstrate".config(tags = setOf(IOTests)) {
+        // It must handle a MalformedURLException
+        shouldThrow<IllegalStateException> {
+            Connections.UsingIO.handleErrors("azsdvbhytfd.co.uk").unsafeRunSync()
+        }
+        // It must handle any other exception
+        shouldThrow<UnsupportedOperationException> {
+            Connections.UsingIO.handleErrors("http://theguardian.ru").unsafeRunSync()
+        }
+    }
+
 })
