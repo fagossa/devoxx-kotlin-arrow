@@ -1,19 +1,28 @@
 package com.github.devoxx.errorhandling
 
 import arrow.core.Try
+import arrow.fx.IO
 import com.github.devoxx.errorhandling.Connections.defaultUrl
+import io.kotlintest.Tag
 import io.kotlintest.fail
 import io.kotlintest.matchers.types.shouldBeInstanceOf
+import io.kotlintest.matchers.types.shouldNotBeNull
 import io.kotlintest.shouldBe
+import io.kotlintest.shouldThrow
 import io.kotlintest.specs.StringSpec
 import java.io.InputStream
+import java.net.MalformedURLException
+
+object TryTests : Tag()
+object EitherTests: Tag()
+object IOTests: Tag()
 
 class ConnectionsSpec : StringSpec({
 
     // ---------------------------
     // Using Try
     // ---------------------------
-    "should catch exceptions using Try<T>" {
+    "Try<T> should catch exceptions".config(tags = setOf(TryTests)) {
         val result = listOf(
                 Connections.UsingTry.parseURL("http://google.com"),
                 Connections.UsingTry.parseURL("azsdvbhytfd.co.uk") // no protocol specified
@@ -21,32 +30,32 @@ class ConnectionsSpec : StringSpec({
         result.map { it.isSuccess() }.shouldBe(listOf(true, false))
     }
 
-    "should default values for Try<T>" {
+    "Try<T> should default values" .config(tags = setOf(TryTests)) {
         val result = Connections.UsingTry.urlOrElse("azsdvbhytfd.co.uk") // no protocol specified
         result.shouldBe(defaultUrl)
     }
 
-    "should demonstrate Try<T>.map" {
+    "Try<T>.map should demonstrate".config(tags = setOf(TryTests)) {
         val result: Try<Try<Try<InputStream>>> = Connections.UsingTry.inputStreamForURLWithMap("http://google.com")
         result.isSuccess().shouldBe(true)
     }
 
-    "should demonstrate Try<T>.flatMap" {
+    "Try<T>.flatMap should demonstrate".config(tags = setOf(TryTests)) {
         val result: Try<InputStream> = Connections.UsingTry.inputStreamForURL("http://google.com")
         result.isSuccess().shouldBe(true)
     }
 
-    "should demonstrate Try<T>.filter" {
+    "Try<T>.filter should demonstrate".config(tags = setOf(TryTests)) {
         Connections.UsingTry.parseHttpURL("http://google.com").isSuccess().shouldBe(true)
         Connections.UsingTry.parseHttpURL("https://google.com").isSuccess().shouldBe(false)
     }
 
-    "should demonstrate monad comprehension" {
+    "Try<T>.filter should demonstrate monad comprehension".config(tags = setOf(TryTests)) {
         val urlContent: Try<ByteIterator> = Connections.UsingTry.getURLContent("http://google.com")
         urlContent.isSuccess().shouldBe(true)
     }
 
-    "should demonstrate Try<T>.handleError" {
+    "Try<T>.handleError should demonstrate".config(tags = setOf(TryTests)) {
         // It must handle a MalformedURLException
         Connections.UsingTry.handleErrors("azsdvbhytfd.co.uk").fold(
                 { it.shouldBeInstanceOf<IllegalStateException>() },
@@ -62,7 +71,7 @@ class ConnectionsSpec : StringSpec({
     // ---------------------------
     // Using Either
     // ---------------------------
-    "should catch exceptions using Either<U, T>" {
+    "Either<U, T> should catch exceptions".config(tags = setOf(EitherTests)) {
         val result = listOf(
                 Connections.UsingEither.parseURL("http://google.com"),
                 Connections.UsingEither.parseURL("azsdvbhytfd.co.uk") // no protocol specified
@@ -70,17 +79,17 @@ class ConnectionsSpec : StringSpec({
         result.map { it.isRight() }.shouldBe(listOf(true, false))
     }
 
-    "should default values for Either<U, T>" {
+    "Either<U, T> should handle values".config(tags = setOf(EitherTests)) {
         val result = Connections.UsingEither.urlOrElse("azsdvbhytfd.co.uk") // no protocol specified
         defaultUrl.fold({ fail("unexpected") }, { url -> result.shouldBe(url) })
     }
 
-    "should demonstrate Either<U, T>.filter" {
+    "Either<U, T>.filter should demonstrate filtering".config(tags = setOf(EitherTests)) {
         Connections.UsingEither.parseHttpURL("http://google.com").isRight().shouldBe(true)
         Connections.UsingEither.parseHttpURL("https://google.com").isRight().shouldBe(false)
     }
 
-    "should demonstrate Either<U, T>.handleError" {
+    "Either<U, T>.handleError should handle errors :)".config(tags = setOf(EitherTests)) {
         // It must handle a MalformedURLException
         Connections.UsingEither.handleErrors("azsdvbhytfd.co.uk").fold(
                 { it.shouldBeInstanceOf<IllegalStateException>() },
@@ -91,5 +100,21 @@ class ConnectionsSpec : StringSpec({
                 { it.shouldBeInstanceOf<UnsupportedOperationException>() },
                 { fail("it was expected to fail") }
         )
+    }
+
+    // ---------------------------
+    // Using IO
+    // ---------------------------
+
+    "IO<T> should catch exceptions".config(tags = setOf(IOTests)) {
+        Connections.UsingIO.parseURL("http://google.com").unsafeRunSync().shouldNotBeNull()
+        shouldThrow<MalformedURLException> {
+            Connections.UsingIO.parseURL("azsdvbhytfd.co.uk").unsafeRunSync()
+        }
+    }
+
+    "IO<T>.flatMap should demonstrate".config(tags = setOf(IOTests)) {
+        val result: IO<InputStream> = Connections.UsingIO.inputStreamForURL("http://google.com")
+        result.unsafeRunSync().shouldNotBeNull()
     }
 })

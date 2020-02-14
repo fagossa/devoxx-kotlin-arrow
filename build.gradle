@@ -16,6 +16,7 @@ repositories {
 
 test {
     useJUnitPlatform()
+    systemProperties = System.properties
 }
 
 def arrow_version = "0.10.4"

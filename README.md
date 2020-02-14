@@ -6,9 +6,26 @@ Workshop on FP in kotlin using arrow
 * Using `Either<Throwable, T>`
 * Using `IO<T>`
 
+## 1.1. Running all tests in this category
 ```
 ./gradlew test --tests com.github.devoxx.errorhandling.ConnectionsSpec
 ```
+
+## 1.2. Running Try tests
+```
+./gradlew test -Dkotlintest.tags.include=TryTests --tests com.github.devoxx.errorhandling.ConnectionsSpec
+```
+
+## 1.3. Running Either tests
+```
+./gradlew test -Dkotlintest.tags.include=EitherTests --tests com.github.devoxx.errorhandling.ConnectionsSpec
+```
+
+## 1.4. Running IO tests
+```
+./gradlew test -Dkotlintest.tags.include=IOTests --tests com.github.devoxx.errorhandling.ConnectionsSpec
+```
+
 
 # 2. Pure setters/getters
 Using `Lens`
